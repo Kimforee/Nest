@@ -1,0 +1,45 @@
+{% for nest in nests %}
+<div class="roomListRoom">
+   
+    <div class="nest-card">
+        <h5><a class="nest-link" href="{% url 'nest' nest.id %}">{{ nest.id }} -- {{ nest.name }}</a></h5>
+        <small>{{ nest.topic.name }} . {{ nest }}</small>
+    
+        <!-- if user is host -->
+        {% if nest.host.username|striptags == request.user.username|striptags %}
+        <div class="action-buttons">
+            <button><a href="{% url 'update-nest' nest.id %}">Edit</a></button>
+            <button><a href="{% url 'delete-nest' nest.id %}">Delete</a></button>
+        </div>
+        <label>You are a Guardian in this Nest</label>
+    
+        <!-- if user is member of a nest -->
+        {% elif request.user in nest.participants.all %}
+        <p>You are a member in this Nest</p>
+        <div class="leave-button">
+        <form action="{% url 'leave-nest' pk=nest.id %}" method="post">
+            {% csrf_token %}
+            <input type="submit" name="leave_request" value="Leave Nest">
+        </form>
+        </div>
+    
+        {% else %}
+        
+        <!-- check if user is authenticated -->
+        {% if request.user.is_authenticated and request.user not in nest.participants.all %}
+        <div class="join-button">
+            <form action="{% url 'nest' pk=nest.id %}" method="post">
+                {% csrf_token %}
+                <input type="submit" name="join_request" value="Join Nest">
+            </form>
+        </div>
+        {% endif %}
+        {% endif %}
+        <!-- link host's profile -->
+        <a class="host-link" href="{% url 'user-profile' nest.host.id %}">
+            by: {{ nest.host.username }}
+        </a>    
+    </div>
+
+</div>
+{% endfor %}
